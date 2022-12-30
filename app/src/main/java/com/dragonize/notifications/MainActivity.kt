@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun showNotification() {
         val mBuilder: NotificationCompat.Builder = NotificationCompat.Builder(this, Notif.CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.stat_notify_chat)
+            .setSmallIcon(R.drawable.ic_notifications)
             .setContentTitle("Hello, attention!")
             .setContentText("Here's the notification you were looking for!")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
