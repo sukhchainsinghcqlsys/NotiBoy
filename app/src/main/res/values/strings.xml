@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">NotiBoy</string>
+    <string name="notification_background">Notification Background</string>
 </resources>

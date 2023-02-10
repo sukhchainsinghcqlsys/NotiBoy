@@ -1,27 +1,24 @@
 package com.dragonize.notifications
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
+import android.app.*
 import android.os.Build
 import android.os.Bundle
+import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.bumptech.glide.Glide
 import com.dragonize.notifications.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
-
+    var id: Int = 0
     class NotifChannel {
         val CHANNEL_ID = "#123"
         val CHANNEL_NAME = "my notification"
         val CHANNEL_DESCRIPTION = "Test"
     }
-    class Notif {
-        val SMALL_ICON = R.drawable.ic_notifications
-        val TITLE = "Hello, attention!"
-        val DESCRIPTION = "Here's the notification you were looking for!"
-        var id: Int = 0
+    class Notif(var SMALL_ICON:Int, var TITLE:String, var DESCRIPTION:String, var ID:Int) {
     }
 
     lateinit var binding: ActivityMainBinding
@@ -40,7 +37,10 @@ class MainActivity : AppCompatActivity() {
 
         binding.apply {
             tvBtn.setOnClickListener {
-                showNotification(notifChannel, Notif())
+                showNotification(notifChannel, Notif(R.drawable.ic_notifications,
+                    "Hello, attention!",
+                    "Here's the notification you were looking for!",
+                id++))
             }
         }
     }
@@ -60,13 +60,19 @@ class MainActivity : AppCompatActivity() {
         return channel
     }
 
-    private fun showNotification(nc: NotifChannel, n: Notif) {
+    private fun showNotification(nc: NotifChannel, n: Notif) {// Get the layouts to use in the custom notification
+        val notificationLayout = RemoteViews(packageName, R.layout.notification_basic)
+        val notificationLayoutExpanded = RemoteViews(packageName, R.layout.notification_expanded)
         val mBuilder: NotificationCompat.Builder = NotificationCompat.Builder(this, nc.CHANNEL_ID)
             .setSmallIcon(n.SMALL_ICON)
             .setContentTitle(n.TITLE)
             .setContentText(n.DESCRIPTION)
+            .setStyle(NotificationCompat.BigPictureStyle())
+            .setCustomContentView(notificationLayout)
+            .setCustomBigContentView(notificationLayoutExpanded)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+
         val mNotificationManager = NotificationManagerCompat.from(this)
-        mNotificationManager.notify(n.id++, mBuilder.build())
+        mNotificationManager.notify(n.ID, mBuilder.build())
     }
 }
