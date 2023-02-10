@@ -12,14 +12,20 @@ import com.dragonize.notifications.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
-    object Notif {
+    class NotifChannel {
         val CHANNEL_ID = "#123"
         val CHANNEL_NAME = "my notification"
         val CHANNEL_DESCRIPTION = "Test"
+    }
+    class Notif {
+        val SMALL_ICON = R.drawable.ic_notifications
+        val TITLE = "Hello, attention!"
+        val DESCRIPTION = "Here's the notification you were looking for!"
         var id: Int = 0
     }
 
     lateinit var binding: ActivityMainBinding
+    lateinit var nc: NotificationChannel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,33 +35,38 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                Notif.CHANNEL_ID,
-                Notif.CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            channel.description = Notif.CHANNEL_DESCRIPTION
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
-        }
+        val notifChannel = NotifChannel()
+        nc = createNotifChannel(notifChannel)
 
         binding.apply {
             tvBtn.setOnClickListener {
-                showNotification()
+                showNotification(notifChannel, Notif())
             }
         }
     }
 
+    private fun createNotifChannel(n: NotifChannel): NotificationChannel {
+        lateinit var channel: NotificationChannel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            channel = NotificationChannel(
+                n.CHANNEL_ID,
+                n.CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            channel.description = n.CHANNEL_DESCRIPTION
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+        return channel
+    }
 
-    private fun showNotification() {
-        val mBuilder: NotificationCompat.Builder = NotificationCompat.Builder(this, Notif.CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("Hello, attention!")
-            .setContentText("Here's the notification you were looking for!")
+    private fun showNotification(nc: NotifChannel, n: Notif) {
+        val mBuilder: NotificationCompat.Builder = NotificationCompat.Builder(this, nc.CHANNEL_ID)
+            .setSmallIcon(n.SMALL_ICON)
+            .setContentTitle(n.TITLE)
+            .setContentText(n.DESCRIPTION)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
         val mNotificationManager = NotificationManagerCompat.from(this)
-        mNotificationManager.notify(Notif.id++, mBuilder.build())
+        mNotificationManager.notify(n.id++, mBuilder.build())
     }
 }
