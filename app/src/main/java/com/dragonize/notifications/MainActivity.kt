@@ -1,46 +1,90 @@
 package com.dragonize.notifications
 
 import android.app.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.bumptech.glide.Glide
+import androidx.core.content.ContextCompat
 import com.dragonize.notifications.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
-    var id: Int = 0
     class NotifChannel {
-        val CHANNEL_ID = "#123"
+        companion object {
+            var id: Int = 0
+        }
+        val CHANNEL_ID = "#123"+(id++)
         val CHANNEL_NAME = "my notification"
         val CHANNEL_DESCRIPTION = "Test"
     }
-    class Notif(var SMALL_ICON:Int, var TITLE:String, var DESCRIPTION:String, var ID:Int) {
+    class Notif(var SMALL_ICON:Int, var TITLE:String, var DESCRIPTION:String, var GROUP:String) {
+        companion object {
+            var id: Int = 0
+        }
+        val ID:Int = id++
     }
 
     lateinit var binding: ActivityMainBinding
-    lateinit var nc: NotificationChannel
+    lateinit var nc1: NotificationChannel
+    lateinit var nc2: NotificationChannel
+    lateinit var mNotificationManager: NotificationManagerCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        mNotificationManager = NotificationManagerCompat.from(this@MainActivity)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mNotificationManager.createNotificationChannelGroup(NotificationChannelGroup("NotiBoy", "Noti"))
+        }
     }
 
     override fun onStart() {
         super.onStart()
-        val notifChannel = NotifChannel()
-        nc = createNotifChannel(notifChannel)
+        val notifChannel1 = NotifChannel()
+        val notifChannel2 = NotifChannel()
+        nc1 = createNotifChannel(notifChannel1)
+        nc2 = createNotifChannel(notifChannel2)
+
+
+        val list = ArrayList<Notif>()
+        list.add(Notif(R.drawable.ic_notifications,
+            "Hello, attention!",
+            "Here's the notification you were looking for!",
+            "NotiBoy"))
+        list.add(Notif(R.drawable.ic_notifications,
+            "Hello, attention!",
+            "Here's the notification you were looking for!",
+            "NotiBoy"))
+        list.add(Notif(R.drawable.ic_notifications,
+            "Hello, attention!",
+            "Here's the notification you were looking for!",
+            "NotiBoy"))
+        list.add(Notif(R.drawable.ic_notifications,
+            "Hello, attention!",
+            "Here's the notification you were looking for!",
+            "NotiBoy"))
 
         binding.apply {
             tvBtn.setOnClickListener {
-                showNotification(notifChannel, Notif(R.drawable.ic_notifications,
-                    "Hello, attention!",
-                    "Here's the notification you were looking for!",
-                id++))
+//                showNotification(notifChannel1, list[list.size-1])
+                showNotifications(notifChannel1, list)
+                Log.i("NotifChannel1 :", notifChannel1.CHANNEL_ID)
+            }
+            tvBtn2.setOnClickListener {
+                list.lastOrNull()?.let { it1 ->
+                    mNotificationManager.cancel(
+                        it1.ID)
+                }
+                list.removeLastOrNull()
             }
         }
     }
@@ -61,18 +105,74 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showNotification(nc: NotifChannel, n: Notif) {// Get the layouts to use in the custom notification
-        val notificationLayout = RemoteViews(packageName, R.layout.notification_basic)
-        val notificationLayoutExpanded = RemoteViews(packageName, R.layout.notification_expanded)
+//        val notificationLayout = RemoteViews(packageName, R.layout.notification_basic)
+//        val notificationLayoutExpanded = RemoteViews(packageName, R.layout.notification_expanded)
+
         val mBuilder: NotificationCompat.Builder = NotificationCompat.Builder(this, nc.CHANNEL_ID)
             .setSmallIcon(n.SMALL_ICON)
             .setContentTitle(n.TITLE)
             .setContentText(n.DESCRIPTION)
-            .setStyle(NotificationCompat.BigPictureStyle())
-            .setCustomContentView(notificationLayout)
-            .setCustomBigContentView(notificationLayoutExpanded)
+            .setGroup(n.GROUP)
+            .setStyle(NotificationCompat.BigPictureStyle()
+                .bigPicture(ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_notification_background)
+                    ?.let { drawableToBitmap(it) }))
+            .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_ALL)
+//            .setCustomContentView(notificationLayout)
+//            .setCustomBigContentView(notificationLayoutExpanded)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
-        val mNotificationManager = NotificationManagerCompat.from(this)
+        mBuilder.setGroupSummary(true)
+
         mNotificationManager.notify(n.ID, mBuilder.build())
+    }
+
+    private fun showNotifications(nc: NotifChannel, ns: ArrayList<Notif>) {
+        ns.forEach { it ->
+            val mBuilder: NotificationCompat.Builder = NotificationCompat.Builder(this, nc.CHANNEL_ID)
+                .setSmallIcon(it.SMALL_ICON)
+                .setContentTitle(it.TITLE)
+                .setContentText(it.DESCRIPTION)
+                .setGroup(it.GROUP)
+                .setGroupSummary(true)
+                .setStyle(NotificationCompat.BigPictureStyle()
+                    .bigPicture(ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_notification_background)
+                        ?.let { drawableToBitmap(it) }))
+                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_ALL)
+//            .setCustomContentView(notificationLayout)
+//            .setCustomBigContentView(notificationLayoutExpanded)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+            if (ns.last().ID == it.ID)
+                mBuilder.setGroupSummary(true)
+
+            mNotificationManager.notify(it.ID, mBuilder.build())
+        }
+    }
+
+    fun drawableToBitmap(drawable: Drawable): Bitmap? {
+        var bitmap: Bitmap? = null
+        if (drawable is BitmapDrawable) {
+            val bitmapDrawable = drawable
+            if (bitmapDrawable.bitmap != null) {
+                return bitmapDrawable.bitmap
+            }
+        }
+        bitmap = if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) {
+            Bitmap.createBitmap(
+                1,
+                1,
+                Bitmap.Config.ARGB_8888
+            ) // Single color bitmap will be created of 1x1 pixel
+        } else {
+            Bitmap.createBitmap(
+                drawable.intrinsicWidth,
+                drawable.intrinsicHeight,
+                Bitmap.Config.ARGB_8888
+            )
+        }
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        return bitmap
     }
 }
