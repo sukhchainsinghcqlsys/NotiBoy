@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.RemoteViews
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -33,8 +32,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     lateinit var binding: ActivityMainBinding
-    lateinit var nc1: NotificationChannel
-    lateinit var nc2: NotificationChannel
+    lateinit var nc: NotificationChannel
     lateinit var mNotificationManager: NotificationManagerCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,10 +47,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val notifChannel1 = NotifChannel()
-        val notifChannel2 = NotifChannel()
-        nc1 = createNotifChannel(notifChannel1)
-        nc2 = createNotifChannel(notifChannel2)
+        val notifChannel = NotifChannel()
+        nc = createNotifChannel(notifChannel)
 
 
         val list = ArrayList<Notif>()
@@ -75,9 +71,10 @@ class MainActivity : AppCompatActivity() {
 
         binding.apply {
             tvBtn.setOnClickListener {
-//                showNotification(notifChannel1, list[list.size-1])
-                showNotifications(notifChannel1, list)
-                Log.i("NotifChannel1 :", notifChannel1.CHANNEL_ID)
+                showNotification(notifChannel, list[list.size-1])
+//                showNotifications(notifChannel, list)
+                Log.i("NotifChannel1 :",""+
+                    mNotificationManager.notificationChannelGroups.count())
             }
             tvBtn2.setOnClickListener {
                 list.lastOrNull()?.let { it1 ->
@@ -112,16 +109,18 @@ class MainActivity : AppCompatActivity() {
             .setSmallIcon(n.SMALL_ICON)
             .setContentTitle(n.TITLE)
             .setContentText(n.DESCRIPTION)
-            .setGroup(n.GROUP)
+            .setGroup(n.GROUP).setGroupSummary(true)
             .setStyle(NotificationCompat.BigPictureStyle()
                 .bigPicture(ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_notification_background)
+                    ?.let { drawableToBitmap(it) })
+                .bigLargeIcon(ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_notifications)
                     ?.let { drawableToBitmap(it) }))
             .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_ALL)
 //            .setCustomContentView(notificationLayout)
 //            .setCustomBigContentView(notificationLayoutExpanded)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+//            .setAutoCancel(false)
 
-        mBuilder.setGroupSummary(true)
 
         mNotificationManager.notify(n.ID, mBuilder.build())
     }
