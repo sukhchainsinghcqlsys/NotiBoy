@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         val notifChannel = NotifChannel()
         nc = createNotifChannel(notifChannel)
-
+        (mNotificationManager as NotificationManager).activeNotifications.count()
 
         val list = ArrayList<Notif>()
         list.add(Notif(R.drawable.ic_notifications,
