@@ -8,14 +8,20 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.dragonize.notifications.compose.*
 import com.dragonize.notifications.databinding.ActivityMainBinding
 
 
 class MainActivity : AppCompatActivity() {
+    val LEFT_BUTTON = 1
+    val RIGHT_BUTTON = 2
+    val CENTER_TEXT = 3
+
     class NotifChannel {
         companion object {
             var id: Int = 0
@@ -37,8 +43,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        actionBar?.hide()
+        supportActionBar?.hide()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val toolBar = TopBar(this)
+        val lb = toolBar.left.addImageButton(LEFT_BUTTON, R.drawable.ic_notifications)
+        val lb2 = toolBar.left.addImageButton(LEFT_BUTTON, R.drawable.ic_notifications)
+        val lb3 = toolBar.left.addImageButton(LEFT_BUTTON, R.drawable.ic_notifications)
+        val ct = toolBar.center.addTextView(CENTER_TEXT, "NotiBoy App! !!!!!!!!!!!!!!!!!!!!!!!!!!! !!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        val rb = toolBar.right.addImageButton(RIGHT_BUTTON, R.drawable.ic_notifications)
+
+        binding.root.addView(toolBar)
+
         mNotificationManager = NotificationManagerCompat.from(this@MainActivity)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             mNotificationManager.createNotificationChannelGroup(NotificationChannelGroup("NotiBoy", "Noti"))
@@ -49,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
         val notifChannel = NotifChannel()
         nc = createNotifChannel(notifChannel)
-        (mNotificationManager as NotificationManager).activeNotifications.count()
+//        (mNotificationManager as NotificationManagerCompat).activeNotifications.count()
 
         val list = ArrayList<Notif>()
         list.add(Notif(R.drawable.ic_notifications,

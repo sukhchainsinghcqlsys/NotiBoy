@@ -1,11 +1,10 @@
-package com.displayapp.dialog
+package com.dragonize.notifications.compose
 
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
 import android.view.*
-import com.displayapp.databinding.DialogAlertBinding
-import com.displayapp.databinding.DialogLogoutBinding
+import com.dragonize.notifications.databinding.DialogAlertBinding
 
 
 class AlertDialog(val context: Context, val dialog: Dialog?=null) {
